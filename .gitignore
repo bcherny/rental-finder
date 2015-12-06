@@ -1,2 +1,4 @@
 .DS_Store
+fixtures
 node_modules
+npm-debug.log
