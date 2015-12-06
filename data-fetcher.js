@@ -51,5 +51,6 @@ export function fetch (maxPrice) {
 			craigslist_id: Number(h.PostingID),
 			price: Number(h.Ask)
 		})))
+		// TODO: put results in db
 		.catch(e => console.error(e))
 }

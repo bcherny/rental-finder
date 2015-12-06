@@ -1,7 +1,7 @@
 import { fetch } from './data-fetcher'
 import express from 'express'
 
-const HTTP_PORT = 4000
+const HTTP_PORT = 4001
 
 const MAX_PRICE = 1000000
 const CALTRAIN_STATIONS = {
@@ -33,14 +33,14 @@ const CALTRAIN_STATIONS = {
 console.info('fetching data...')
 
 // get posts
-fetch(MAX_PRICE)
-	.then(hs => {
-		console.info(`fetched ${ hs.length } houses`)
-		return hs
-	})
-	.then(startServer)
+let houses = []
+fetch(MAX_PRICE).then(hs => {
+	console.info(`fetched ${ hs.length } houses`)
+	houses = hs
+})
+startServer()
 
-function startServer (hs) {
+function startServer () {
 
 	console.info('starting server...')
 	express()
@@ -48,11 +48,10 @@ function startServer (hs) {
 			console.info(req.method, req.path, req.query)
 			next()
 		})
-		.get('/houses', (req, res) => {
-			res.send(hs.filter(h => h.price <= (Number(req.query.max_price) || MAX_PRICE)))
+		.get('/api/houses', (req, res) => {
+			res.send(houses.filter(h => h.price <= (Number(req.query.max_price) || MAX_PRICE)))
 		})
+		.get('*', express.static(`${ __dirname }/client/dist`))
 		.listen(HTTP_PORT, () => console.info(`started HTTP server on port ${ HTTP_PORT }`))
 
 }
-
-// TODO: put results in db
