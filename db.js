@@ -10,4 +10,5 @@ export const House = db.define('House', {
 	lng: Sequelize.FLOAT,
 	postedOn: Sequelize.DATE,
 	craigslistId: Sequelize.INTEGER
+	price: Sequelize.INTEGER
 })

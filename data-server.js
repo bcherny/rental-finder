@@ -1,7 +1,9 @@
 import { fetch } from './data-fetcher'
+import express from 'express'
 
-const MAX_PRICE = 2100
+const HTTP_PORT = 4000
 
+const MAX_PRICE = 1000000
 const CALTRAIN_STATIONS = {
 	'San Francisco': [37.7766646, -122.3947062],
 	'22nd St.': [37.7575278, -122.3926874],
@@ -28,5 +30,29 @@ const CALTRAIN_STATIONS = {
 	'Tamien': [37.3112334, -121.8825612]
 }
 
+console.info('fetching data...')
+
 // get posts
-fetch(MAX_PRICE).then(res => console.log('fetched', res))
+fetch(MAX_PRICE)
+	.then(hs => {
+		console.info(`fetched ${ hs.length } houses`)
+		return hs
+	})
+	.then(startServer)
+
+function startServer (hs) {
+
+	console.info('starting server...')
+	express()
+		.use((req, res, next) => {
+			console.info(req.method, req.path, req.query)
+			next()
+		})
+		.get('/houses', (req, res) => {
+			res.send(hs.filter(h => h.price <= (Number(req.query.max_price) || MAX_PRICE)))
+		})
+		.listen(HTTP_PORT, () => console.info(`started HTTP server on port ${ HTTP_PORT }`))
+
+}
+
+// TODO: put results in db
