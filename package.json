@@ -1,0 +1,22 @@
+{
+  "name": "rental-finder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "data-server.js",
+  "scripts": {
+    "start": "nodemon --exec babel-node -- data-server.js",
+    "start-postgres": "docker run --name postgres -e POSTGRES_PASSWORD=root -e POSTGRES_USER=root -d postgres"
+  },
+  "author": "Boris Cherny <boris@performancejs.com> (http://performancejs.com/)",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.3.13",
+    "babel-preset-es2015": "^6.3.13",
+    "nodemon": "^1.8.1"
+  },
+  "dependencies": {
+    "pg": "^4.4.3",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^3.14.2"
+  }
+}
