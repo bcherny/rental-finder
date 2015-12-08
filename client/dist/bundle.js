@@ -19021,6 +19021,8 @@ module.exports = require('./lib/React');
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -19041,27 +19043,154 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+var WORK = [37.443382, -122.160273];
+
+var CALTRAIN_STATIONS = Object.freeze({
+  'San Francisco': [37.7766646, -122.3947062],
+  '22nd St.': [37.7575278, -122.3926874],
+  'Bayshore': [37.709715, -122.4013705],
+  'South San Francisco': [37.6575655, -122.4055514],
+  'San Bruno': [37.632378, -122.412389],
+  'Millbrae': [37.6003768, -122.3874996],
+  'Burlingame': [37.5795136, -122.3449288],
+  'San Mateo': [37.5679943, -122.3239938],
+  'Hayward Park': [37.5525458, -122.3089987],
+  'Hillsdale': [37.5370455, -122.2973664],
+  'Belmont': [37.555225, -122.3172766],
+  'San Carlos': [37.5075635, -122.2600094],
+  'Redwood City': [37.4854205, -122.2319197],
+  'Menlo Park': [37.4545172, -122.1823623],
+  'Palo Alto': [37.4434248, -122.1651742],
+  'California Ave.': [37.4291586, -122.1419024],
+  'San Antonio': [37.407202, -122.1071600],
+  'Mountain View': [37.3937715, -122.0766438],
+  'Sunnyvale': [37.3780368, -122.0303662],
+  'Lawrence': [37.371556, -121.996962],
+  'Santa Clara': [37.3532523, -121.9365159],
+  'San Jose Diridon': [37.3299098, -121.9024648],
+  'Tamien': [37.3112334, -121.8825612]
+});
+
+function getDistanceFromLatLonInKm(lat0, lng0, lat1, lng1) {}
+
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
+
+function distance(_ref, _ref2) {
+  var _ref4 = _slicedToArray(_ref, 2);
+
+  var lat0 = _ref4[0];
+  var lng0 = _ref4[1];
+
+  var _ref3 = _slicedToArray(_ref2, 2);
+
+  var lat1 = _ref3[0];
+  var lng1 = _ref3[1];
+
+  var R = 3961; // Radius of the earth in km
+  var dLat = deg2rad(lat1 - lat0); // deg2rad below
+  var dLon = deg2rad(lng1 - lng0);
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat0)) * Math.cos(deg2rad(lat1)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c; // Distance in km
+  return d;
+}
+
 var MapBox = (function (_React$Component) {
   _inherits(MapBox, _React$Component);
 
   function MapBox(props) {
     _classCallCheck(this, MapBox);
 
-    console.log('init');
-
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MapBox).call(this, props));
 
     _this.state = {};
+    _this.getHouses();
     return _this;
   }
 
   _createClass(MapBox, [{
+    key: 'generatePopup',
+    value: function generatePopup(r) {
+      return '\n      <a target="_blank" class="popup" href="' + r.url + '">\n        <span class="title">' + r.title + '</span><span class="price">$' + r.price + '</span>\n        ' + r.photos.map(function (p) {
+        return '<img src="' + p + '">';
+      }).join('') + '\n      </a>\n    ';
+    }
+  }, {
+    key: 'getHouses',
+    value: function getHouses() {
+      var _this2 = this;
+
+      fetch('/api/houses?max_price=2100').then(function (_) {
+        return _.json();
+      }).then(function (allHouses) {
+        console.log(allHouses);
+
+        var nearCaltrain = allHouses.filter(function (h) {
+          return Object.keys(CALTRAIN_STATIONS).some(function (s) {
+            return distance([h.lat, h.lng], CALTRAIN_STATIONS[s]) < 1;
+          });
+        });
+        var nearWork = allHouses.filter(function (h) {
+          return distance([h.lat, h.lng], WORK) < 2;
+        });
+
+        // near caltrain markers
+        nearCaltrain.forEach(function (r) {
+          L.marker([r.lat, r.lng], {
+            icon: L.mapbox.marker.icon({
+              'marker-size': 'large',
+              'marker-color': '#fa0'
+            })
+          }).bindPopup(_this2.generatePopup(r), {
+            closeButton: false,
+            minWidth: 400
+          }).addTo(_this2.state.map);
+        });
+
+        // near work markers
+        nearWork.forEach(function (r) {
+          L.marker([r.lat, r.lng], {
+            icon: L.mapbox.marker.icon({
+              'marker-size': 'large',
+              'marker-color': '#088E46'
+            })
+          }).bindPopup(_this2.generatePopup(r), {
+            closeButton: false,
+            minWidth: 400
+          }).addTo(_this2.state.map);
+        });
+
+        // caltrain markers
+        Object.keys(CALTRAIN_STATIONS).forEach(function (s) {
+          L.marker(CALTRAIN_STATIONS[s], {
+            icon: L.mapbox.marker.icon({
+              'marker-size': 'medium',
+              'marker-color': '#ccc'
+            })
+          }).addTo(_this2.state.map);
+        });
+
+        // work marker
+        L.marker(WORK, {
+          icon: L.mapbox.marker.icon({
+            'marker-size': 'medium',
+            'marker-color': '#3BB2D0'
+          })
+        }).addTo(_this2.state.map);
+      });
+    }
+  }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
       console.log('mounted!');
       L.mapbox.accessToken = this.props.accessToken;
 
-      var map = L.mapbox.map(_reactDom2.default.findDOMNode(this).querySelector('.MapBox'), this.props.mapId);
+      var map = L.mapbox.map(_reactDom2.default.findDOMNode(this), this.props.mapId);
+      map.setView([37.4434248, -122.1651742], 12);
+
+      this.setState({ map: map });
     }
   }, {
     key: 'render',
@@ -19096,8 +19225,6 @@ var _reactDom = require('react-dom');
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-console.log('rendering');
 
 _reactDom2.default.render(_react2.default.createElement(_MapBox2.default, {
   accessToken: 'pk.eyJ1IjoiYmNoZXJueSIsImEiOiJjaWd6cGdseWoweDNwd3ltMGhsenI1d2tvIn0.jzRreSEiv5JLGK2DcHyuug',

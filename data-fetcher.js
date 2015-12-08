@@ -5,12 +5,12 @@ import ProgressBar from 'progress'
 import seq from 'promise-seq'
 
 class House {
-	constructor({ lat, lng, posted_on, craigslist_id, price }) {
-		Object.assign(this, { lat, lng, posted_on, craigslist_id, price })
+	constructor(as) {
+		Object.assign(this, as)
 	}
 }
 
-const getURL = maxPrice => `http://sfbay.craigslist.org/jsonsearch/apa/?max_price=${ maxPrice }`
+const getURL = maxPrice => `http://sfbay.craigslist.org/jsonsearch/apa/pen?max_price=${ maxPrice }`
 const getGeoClusterURL = (maxPrice, clusterUrl) => `http://sfbay.craigslist.org${ clusterUrl }&max_price=${ maxPrice }`
 
 // (maxPrice: Number) => Promise[Array[Object]]
@@ -23,6 +23,17 @@ function fetchPosts (maxPrice) {
 function fetchCluster (maxPrice, clusterUrl) {
 	// console.info(`fetch cluster: ${ clusterUrl }`)
 	return request({ json: true, url: getGeoClusterURL(maxPrice, clusterUrl) })
+}
+
+// (urls: String) => Array[String]
+function getPhotos (urls) {
+	let ps = urls
+		.slice(urls.lastIndexOf('/') + 1, -11)
+		.split(',')
+		.map(u => u.replace(':0', ''))
+		.map(u => `http://images.craigslist.org/${ u }_300x300.jpg`)
+	console.log(urls, ps)
+	return ps
 }
 
 export function fetch (maxPrice) {
@@ -49,7 +60,10 @@ export function fetch (maxPrice) {
 			lng: h.Longitude,
 			posted_on: (new Date(Number(h.PostedDate)*1000)).toISOString(),
 			craigslist_id: Number(h.PostingID),
-			price: Number(h.Ask)
+			price: Number(h.Ask),
+			title: h.PostingTitle,
+			url: h.PostingURL,
+			photos: h.ImageThumb ? getPhotos(h.ImageThumb) : []
 		})))
 		// TODO: put results in db
 		.catch(e => console.error(e))

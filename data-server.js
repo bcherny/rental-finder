@@ -1,7 +1,7 @@
 import { fetch } from './data-fetcher'
 import express from 'express'
 
-const HTTP_PORT = 4001
+const HTTP_PORT = 4002
 
 const MAX_PRICE = 1000000
 const CALTRAIN_STATIONS = {

@@ -67,7 +67,7 @@ gulp.task('default', ['css', 'js', 'copyImages', 'copyIndex'])
 gulp.task('watch', function () {
 
   gulp.watch('src/css/*.css', ['css'])
-  gulp.watch('src/js/*.js', ['js'])
+  gulp.watch('src/js/*.jsx', ['js'])
   gulp.watch('src/images/*', ['copyImages'])
   gulp.watch('src/index.html', ['copyIndex'])
 

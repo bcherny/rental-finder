@@ -22,6 +22,7 @@
     "pg-hstore": "^2.3.2",
     "progress": "^1.1.8",
     "request-promise": "^1.0.2",
-    "sequelize": "^3.14.2"
+    "sequelize": "^3.14.2",
+    "whatwg-fetch": "^0.10.1"
   }
 }
