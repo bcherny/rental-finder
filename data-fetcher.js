@@ -27,13 +27,11 @@ function fetchCluster (maxPrice, clusterUrl) {
 
 // (urls: String) => Array[String]
 function getPhotos (urls) {
-	let ps = urls
+	return urls
 		.slice(urls.lastIndexOf('/') + 1, -11)
 		.split(',')
 		.map(u => u.replace(':0', ''))
 		.map(u => `http://images.craigslist.org/${ u }_300x300.jpg`)
-	console.log(urls, ps)
-	return ps
 }
 
 export function fetch (maxPrice) {
