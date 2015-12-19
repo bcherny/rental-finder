@@ -10,8 +10,8 @@ class House {
 	}
 }
 
-const getURL = maxPrice => `http://sfbay.craigslist.org/jsonsearch/apa/pen?max_price=${ maxPrice }`
-const getGeoClusterURL = (maxPrice, clusterUrl) => `http://sfbay.craigslist.org${ clusterUrl }&max_price=${ maxPrice }`
+const getURL = maxPrice => `http://newyork.craigslist.org/jsonsearch/aap/mnh?max_price=${ maxPrice }`
+const getGeoClusterURL = (maxPrice, clusterUrl) => `http://newyork.craigslist.org${ clusterUrl }&max_price=${ maxPrice }`
 
 // (maxPrice: Number) => Promise[Array[Object]]
 function fetchPosts (maxPrice) {
