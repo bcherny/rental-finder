@@ -19518,7 +19518,8 @@ var App = (function (_React$Component) {
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this));
 
     _this.state = {
-      maxDistance: 1
+      maxDistance: 1,
+      maxPrice: 1200
     };
     return _this;
   }
@@ -19526,9 +19527,17 @@ var App = (function (_React$Component) {
   // (maxDistance: Number) => void
 
   _createClass(App, [{
-    key: 'onChangeDistance',
-    value: function onChangeDistance(maxDistance) {
+    key: 'onChangeMaxDistance',
+    value: function onChangeMaxDistance(maxDistance) {
       this.setState(Object.assign({}, this.state, { maxDistance: maxDistance }));
+    }
+
+    // (maxPrice: Number) => void
+
+  }, {
+    key: 'onChangeMaxPrice',
+    value: function onChangeMaxPrice(maxPrice) {
+      this.setState(Object.assign({}, this.state, { maxPrice: maxPrice }));
     }
   }, {
     key: 'render',
@@ -19539,9 +19548,10 @@ var App = (function (_React$Component) {
         _react2.default.createElement(_MapBox2.default, {
           accessToken: 'pk.eyJ1IjoiYmNoZXJueSIsImEiOiJjaWd6cGdseWoweDNwd3ltMGhsenI1d2tvIn0.jzRreSEiv5JLGK2DcHyuug',
           maxDistance: this.state.maxDistance,
+          maxPrice: this.state.maxPrice,
           mapId: 'bcherny.e97e6efa'
         }),
-        _react2.default.createElement(_MapControls2.default, { onChangeDistance: this.onChangeDistance.bind(this) })
+        _react2.default.createElement(_MapControls2.default, { onChangeMaxDistance: this.onChangeMaxDistance.bind(this), onChangeMaxPrice: this.onChangeMaxPrice.bind(this) })
       );
     }
   }]);
@@ -19696,7 +19706,9 @@ var MapBox = (function (_React$Component) {
 
       if (!this.state.map) return _react2.default.createElement('div', null);
 
-      var maxDistance = this.props.maxDistance;
+      var _props = this.props;
+      var maxDistance = _props.maxDistance;
+      var maxPrice = _props.maxPrice;
       var _state = this.state;
       var houses = _state.houses;
       var map = _state.map;
@@ -19705,9 +19717,13 @@ var MapBox = (function (_React$Component) {
       this.clearMarkers();
 
       var nearWork = houses.filter(function (h) {
+        return h.price <= maxPrice;
+      }).filter(function (h) {
         return (0, _gcDistance.haversineDistance)(h.lat, h.lng, WORK[0], WORK[1]) < maxDistance;
       });
       var nearTrain = houses.filter(function (h) {
+        return h.price <= maxPrice;
+      }).filter(function (h) {
         return trainStations.some(function (_ref) {
           var _ref2 = _slicedToArray(_ref, 2);
 
@@ -19754,7 +19770,8 @@ exports.default = MapBox;
 MapBox.propTypes = {
   accessToken: _react2.default.PropTypes.string.isRequired,
   mapId: _react2.default.PropTypes.string.isRequired,
-  maxDistance: _react2.default.PropTypes.number.isRequired
+  maxDistance: _react2.default.PropTypes.number.isRequired,
+  maxPrice: _react2.default.PropTypes.number.isRequired
 };
 
 },{"./stations/bart":177,"./stations/caltrain":178,"gc-distance":28,"lodash/flatten":29,"react":172,"react-dom":43}],175:[function(require,module,exports){
@@ -19787,16 +19804,23 @@ var MapControls = (function (_React$Component) {
 		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MapControls).call(this));
 
 		_this.state = {
-			maxDistance: 1
+			maxDistance: 1,
+			maxPrice: 1200
 		};
 		return _this;
 	}
 
 	_createClass(MapControls, [{
-		key: "onChangeDistance",
-		value: function onChangeDistance(event) {
+		key: "onChangeMaxDistance",
+		value: function onChangeMaxDistance(event) {
 			this.setState({ maxDistance: Number(event.target.value) });
-			this.props.onChangeDistance(this.state.maxDistance);
+			this.props.onChangeMaxDistance(this.state.maxDistance);
+		}
+	}, {
+		key: "onChangeMaxPrice",
+		value: function onChangeMaxPrice(event) {
+			this.setState({ maxPrice: Number(event.target.value) });
+			this.props.onChangeMaxPrice(this.state.maxPrice);
 		}
 	}, {
 		key: "render",
@@ -19804,11 +19828,21 @@ var MapControls = (function (_React$Component) {
 			return _react2.default.createElement(
 				"div",
 				{ className: "MapControls" },
-				"Max distance ",
-				_react2.default.createElement("input", { type: "range", min: "1", max: "10", step: "1", onChange: this.onChangeDistance.bind(this), value: this.state.maxDistance }),
-				" ",
-				this.state.maxDistance,
-				" miles"
+				_react2.default.createElement(
+					"label",
+					null,
+					"Max distance ",
+					_react2.default.createElement("input", { type: "range", min: "1", max: "10", step: "1", onChange: this.onChangeMaxDistance.bind(this), value: this.state.maxDistance }),
+					" ",
+					this.state.maxDistance,
+					" miles"
+				),
+				_react2.default.createElement(
+					"label",
+					null,
+					"Max price $",
+					_react2.default.createElement("input", { type: "number", min: "100", max: "20000", step: "10", onChange: this.onChangeMaxPrice.bind(this), value: this.state.maxPrice })
+				)
 			);
 		}
 	}]);

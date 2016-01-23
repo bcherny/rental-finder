@@ -5,7 +5,7 @@
 }
 
 body {
-	font: 300 14px/22px "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font: 300 14px/22px Calibri, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 html,
@@ -26,11 +26,16 @@ body,
 
 .MapControls {
 	background: rgba(0,0,0,.1);
-	padding: 10px;
 	position: fixed;
 		bottom: 0;
 		left: 0;
 		right: 0;
+}
+
+.MapControls label {
+	border-right: 1px solid rgba(0,0,0,.1);
+	display: inline-block;
+	padding: 10px;
 }
 
 /* probably against the terms */

@@ -96,14 +96,16 @@ export default class MapBox extends React.Component {
   render () {
     if (!this.state.map) return <div />
 
-    const { maxDistance } = this.props
+    const { maxDistance, maxPrice } = this.props
     const { houses, map, trainStations } = this.state
 
     this.clearMarkers()
 
     const nearWork = houses
+      .filter(h => h.price <= maxPrice)
       .filter(h => haversineDistance(h.lat, h.lng, WORK[0], WORK[1]) < maxDistance)
     const nearTrain = houses
+      .filter(h => h.price <= maxPrice)
       .filter(h => trainStations.some(([s, latLng]) => haversineDistance(h.lat, h.lng, latLng[0], latLng[1]) < maxDistance))
       .filter(h => nearWork.indexOf(h) < 0)
 
@@ -151,5 +153,6 @@ export default class MapBox extends React.Component {
 MapBox.propTypes = {
   accessToken: React.PropTypes.string.isRequired,
   mapId: React.PropTypes.string.isRequired,
-  maxDistance: React.PropTypes.number.isRequired
+  maxDistance: React.PropTypes.number.isRequired,
+  maxPrice: React.PropTypes.number.isRequired
 }
