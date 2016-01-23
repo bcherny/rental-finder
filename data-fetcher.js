@@ -13,24 +13,23 @@ class House {
 const AREA = 'sfbay'
 const SUBAREAS = ['eby', 'pen', 'sby', 'sfc']
 
-const getURLs = maxPrice => flatten(SUBAREAS.map(_ => [
-	`http://${AREA}.craigslist.org/jsonsearch/apa/${_}?max_price=${ maxPrice }`,
-	`http://${AREA}.craigslist.org/jsonsearch/${_}/roo?max_price=${ maxPrice }`
+const getURLs = (area, subareas) => flatten(subareas.map(_ => [
+	`http://${area}.craigslist.org/jsonsearch/apa/${_}`,
+	`http://${area}.craigslist.org/jsonsearch/${_}/roo`
 ]))
-const getGeoClusterURL = (maxPrice, clusterUrl) => `http://${AREA}.craigslist.org${ clusterUrl }&max_price=${ maxPrice }`
+const getGeoClusterURL = (area, clusterUrl) => `http://${area}.craigslist.org${ clusterUrl }`
 
-// (maxPrice: Number) => Promise[Array[Object]]
-function fetchPosts (maxPrice) {
-	// console.info(`fetch: <= $${ maxPrice }`)
+// (area: String, subareas: Array[String]) => Promise[Array[Object]]
+function fetchPosts (area, subareas) {
 	return Promise.all(
-		getURLs(maxPrice).map(url => request({ json: true, url }))
+		getURLs(area, subareas).map(url => request({ json: true, url }))
 	).then(flatten)
 }
 
-// (maxPrice: Number, clusterUrl: String) => Promise[Array[Object]]
-function fetchCluster (maxPrice, clusterUrl) {
+// (area: String, clusterUrl: String) => Promise[Array[Object]]
+function fetchCluster (area, clusterUrl) {
 	// console.info(`fetch cluster: ${ clusterUrl }`)
-	return request({ json: true, url: getGeoClusterURL(maxPrice, clusterUrl) })
+	return request({ json: true, url: getGeoClusterURL(area, clusterUrl) })
 }
 
 // (urls: String) => Array[String]
@@ -42,8 +41,8 @@ function getPhotos (urls) {
 		.map(u => `http://images.craigslist.org/${ u }_300x300.jpg`)
 }
 
-export function fetch (maxPrice) {
-	return fetchPosts(maxPrice)
+export function fetch () {
+	return fetchPosts(AREA, SUBAREAS)
 		.then(_ => _[0])
 		.then(hs => partition(hs, 'GeoCluster'))
 		.then(phs => {
@@ -53,7 +52,7 @@ export function fetch (maxPrice) {
 			// query for clustered posts sequentially, in random chunks of 10-30 at a time
 			return seq(
 				chunk(phs[0], random(10, 30))
-					.map(hs => () => Promise.all(hs.map(h => fetchCluster(maxPrice, h.url).then(h => {
+					.map(hs => () => Promise.all(hs.map(h => fetchCluster(AREA, h.url).then(h => {
 						bar.tick()
 						return h
 					}))))
