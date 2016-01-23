@@ -4,6 +4,10 @@
 	padding: 0;
 }
 
+body {
+	font: 300 14px/22px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 html,
 body,
 #App,
@@ -12,17 +16,36 @@ body,
 	width: 100%;
 }
 
-.leaflet-popup-content {
-	display: block;
-	max-height: 400px;
-	max-width: 400px;
-	overflow: auto;
+.MapBox {
+	position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		top: 0;
+}
+
+.MapControls {
+	background: rgba(0,0,0,.1);
+	padding: 10px;
+	position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
 }
 
 /* probably against the terms */
 .mapbox-logo,
 .leaflet-bottom.leaflet-right {
 	display: none;
+}
+
+/* popups */
+
+.leaflet-popup-content {
+	display: block;
+	max-height: 400px;
+	max-width: 400px;
+	overflow: auto;
 }
 
 .price {

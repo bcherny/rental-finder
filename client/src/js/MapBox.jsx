@@ -21,8 +21,13 @@ export default class MapBox extends React.Component {
 
   constructor (props) {
     super (props)
-    this.state = {}
+    this.state = {
+      houses: [],
+      markers: [],
+      trainStations: []
+    }
     this.getHouses()
+    this.getTrainStations()
   }
 
   generatePopup (r) {
@@ -35,59 +40,16 @@ export default class MapBox extends React.Component {
   }
  
   getHouses () {
-    fetch(`/api/houses?max_price=${MAX_PRICE}`).then(_ => _.json()).then(allHouses => {
-      console.log(allHouses)
+    fetch(`/api/houses?max_price=${MAX_PRICE}`).then(_ => _.json()).then(houses => {
+      console.info('got houses!', houses)
+      this.setState(Object.assign({}, this.state, { houses }))
+    })
+  }
 
-      getTrainStations().then(trainStations => {
-
-        let nearTrain = allHouses.filter(h => trainStations.some(([s, latLng]) => haversineDistance(h.lat, h.lng, latLng[0], latLng[1]) < 1))
-        let nearWork = allHouses.filter(h => haversineDistance(h.lat, h.lng, WORK[0], WORK[1]) < 2)
-
-        // near train markers
-        nearTrain.forEach(r => {
-          L.marker([r.lat, r.lng], {
-            icon: L.mapbox.marker.icon({
-              'marker-size': 'large',
-              'marker-color': '#fa0'
-            })
-          }).bindPopup(this.generatePopup(r), {
-            closeButton: false,
-            minWidth: 400
-          }).addTo(this.state.map)
-        })
-
-        // near work markers
-        nearWork.forEach(r => {
-          L.marker([r.lat, r.lng], {
-            icon: L.mapbox.marker.icon({
-              'marker-size': 'large',
-              'marker-color': '#088E46'
-            })
-          }).bindPopup(this.generatePopup(r), {
-            closeButton: false,
-            minWidth: 400
-          }).addTo(this.state.map)
-        })
-
-        // caltrain markers
-        trainStations.forEach(([s, latLng]) => {
-          L.marker(latLng, {
-            icon: L.mapbox.marker.icon({
-              'marker-size': 'medium',
-              'marker-color': '#ccc'
-            })
-          }).addTo(this.state.map)
-        })
-
-        // work marker
-        L.marker(WORK, {
-          icon: L.mapbox.marker.icon({
-            'marker-size': 'medium',
-            'marker-color': '#3BB2D0'
-          })
-        }).addTo(this.state.map)
-      })
-
+  getTrainStations () {
+    getTrainStations().then(trainStations => {
+      console.info('got train stations!', trainStations)
+      this.setState(Object.assign({}, this.state, { trainStations }))
     })
   }
 
@@ -103,7 +65,77 @@ export default class MapBox extends React.Component {
     this.setState({ map: map })
   }
 
+  addMarker (lat, lng, style, popup) {
+    const m = L.marker([lat, lng], {
+      icon: L.mapbox.marker.icon(style)
+    })
+
+    if (popup) m.bindPopup(popup, {
+      closeButton: false,
+      minWidth: 400
+    })
+
+    m.addTo(this.state.map)
+
+    this.state.markers.push(m) // avoid render
+  }
+
+  clearMarkers () {
+    this.state.markers.forEach(_ => this.state.map.removeLayer(_))
+  }
+
   render () {
+    if (!this.state.map) return <div />
+
+    const { maxDistance } = this.props
+    const { houses, map, trainStations } = this.state
+
+    this.clearMarkers()
+
+    const nearWork = houses
+      .filter(h => haversineDistance(h.lat, h.lng, WORK[0], WORK[1]) < maxDistance)
+    const nearTrain = houses
+      .filter(h => trainStations.some(([s, latLng]) => haversineDistance(h.lat, h.lng, latLng[0], latLng[1]) < maxDistance))
+      .filter(h => nearWork.indexOf(h) < 0)
+
+    // near train markers
+    nearTrain.forEach(r => {
+      this.addMarker(
+        r.lat,
+        r.lng,
+        { 'marker-size': 'large', 'marker-color': '#fa0' },
+        this.generatePopup(r)
+      )
+    })
+
+    // near work markers
+    nearWork.forEach(r => {
+      this.addMarker(
+        r.lat,
+        r.lng,
+        { 'marker-size': 'large', 'marker-color': '#088E46' },
+        this.generatePopup(r)
+      )
+    })
+
+    // caltrain markers
+    trainStations.forEach(([s, latLng]) => {
+      this.addMarker(
+        latLng[0],
+        latLng[1],
+        { 'marker-size': 'medium', 'marker-color': '#ccc' },
+        null
+      )
+    })
+
+    // work marker
+    this.addMarker(
+      WORK[0],
+      WORK[1],
+      { 'marker-size': 'medium', 'marker-color': '#3BB2D0' },
+      null
+    )
+
     return <div className="MapBox"></div>
   }
 
@@ -111,5 +143,6 @@ export default class MapBox extends React.Component {
 
 MapBox.propTypes = {
   accessToken: React.PropTypes.string.isRequired,
-  mapId: React.PropTypes.string.isRequired
+  mapId: React.PropTypes.string.isRequired,
+  maxDistance: React.PropTypes.number.isRequired
 }

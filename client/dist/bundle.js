@@ -19483,6 +19483,77 @@ module.exports = require('./lib/React');
 },{"./lib/React":67}],173:[function(require,module,exports){
 'use strict';
 
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _MapBox = require('./MapBox.jsx');
+
+var _MapBox2 = _interopRequireDefault(_MapBox);
+
+var _MapControls = require('./MapControls.jsx');
+
+var _MapControls2 = _interopRequireDefault(_MapControls);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var App = (function (_React$Component) {
+  _inherits(App, _React$Component);
+
+  function App() {
+    _classCallCheck(this, App);
+
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this));
+
+    _this.state = {
+      maxDistance: 1
+    };
+    return _this;
+  }
+
+  // (maxDistance: Number) => void
+
+  _createClass(App, [{
+    key: 'onChangeDistance',
+    value: function onChangeDistance(maxDistance) {
+      this.setState(Object.assign({}, this.state, { maxDistance: maxDistance }));
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      return _react2.default.createElement(
+        'div',
+        null,
+        _react2.default.createElement(_MapBox2.default, {
+          accessToken: 'pk.eyJ1IjoiYmNoZXJueSIsImEiOiJjaWd6cGdseWoweDNwd3ltMGhsenI1d2tvIn0.jzRreSEiv5JLGK2DcHyuug',
+          maxDistance: this.state.maxDistance,
+          mapId: 'bcherny.e97e6efa'
+        }),
+        _react2.default.createElement(_MapControls2.default, { onChangeDistance: this.onChangeDistance.bind(this) })
+      );
+    }
+  }]);
+
+  return App;
+})(_react2.default.Component);
+
+exports.default = App;
+
+},{"./MapBox.jsx":174,"./MapControls.jsx":175,"react":172}],174:[function(require,module,exports){
+'use strict';
+
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -19523,7 +19594,7 @@ var MAX_PRICE = 1300;
 var WORK = [37.7809332, -122.4156281];
 
 // (void) => Promise[Array[Array]]
-function getTrainStations() {
+function _getTrainStations() {
   return Promise.all([(0, _bart.get)(), (0, _caltrain.get)()]).then(_flatten2.default);
 }
 
@@ -19535,8 +19606,13 @@ var MapBox = (function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MapBox).call(this, props));
 
-    _this.state = {};
+    _this.state = {
+      houses: [],
+      markers: [],
+      trainStations: []
+    };
     _this.getHouses();
+    _this.getTrainStations();
     return _this;
   }
 
@@ -19554,73 +19630,19 @@ var MapBox = (function (_React$Component) {
 
       fetch('/api/houses?max_price=' + MAX_PRICE).then(function (_) {
         return _.json();
-      }).then(function (allHouses) {
-        console.log(allHouses);
+      }).then(function (houses) {
+        console.info('got houses!', houses);
+        _this2.setState(Object.assign({}, _this2.state, { houses: houses }));
+      });
+    }
+  }, {
+    key: 'getTrainStations',
+    value: function getTrainStations() {
+      var _this3 = this;
 
-        getTrainStations().then(function (trainStations) {
-
-          var nearTrain = allHouses.filter(function (h) {
-            return trainStations.some(function (_ref) {
-              var _ref2 = _slicedToArray(_ref, 2);
-
-              var s = _ref2[0];
-              var latLng = _ref2[1];
-              return (0, _gcDistance.haversineDistance)(h.lat, h.lng, latLng[0], latLng[1]) < 1;
-            });
-          });
-          var nearWork = allHouses.filter(function (h) {
-            return (0, _gcDistance.haversineDistance)(h.lat, h.lng, WORK[0], WORK[1]) < 2;
-          });
-
-          // near train markers
-          nearTrain.forEach(function (r) {
-            L.marker([r.lat, r.lng], {
-              icon: L.mapbox.marker.icon({
-                'marker-size': 'large',
-                'marker-color': '#fa0'
-              })
-            }).bindPopup(_this2.generatePopup(r), {
-              closeButton: false,
-              minWidth: 400
-            }).addTo(_this2.state.map);
-          });
-
-          // near work markers
-          nearWork.forEach(function (r) {
-            L.marker([r.lat, r.lng], {
-              icon: L.mapbox.marker.icon({
-                'marker-size': 'large',
-                'marker-color': '#088E46'
-              })
-            }).bindPopup(_this2.generatePopup(r), {
-              closeButton: false,
-              minWidth: 400
-            }).addTo(_this2.state.map);
-          });
-
-          // caltrain markers
-          trainStations.forEach(function (_ref3) {
-            var _ref4 = _slicedToArray(_ref3, 2);
-
-            var s = _ref4[0];
-            var latLng = _ref4[1];
-
-            L.marker(latLng, {
-              icon: L.mapbox.marker.icon({
-                'marker-size': 'medium',
-                'marker-color': '#ccc'
-              })
-            }).addTo(_this2.state.map);
-          });
-
-          // work marker
-          L.marker(WORK, {
-            icon: L.mapbox.marker.icon({
-              'marker-size': 'medium',
-              'marker-color': '#3BB2D0'
-            })
-          }).addTo(_this2.state.map);
-        });
+      _getTrainStations().then(function (trainStations) {
+        console.info('got train stations!', trainStations);
+        _this3.setState(Object.assign({}, _this3.state, { trainStations: trainStations }));
       });
     }
   }, {
@@ -19634,8 +19656,83 @@ var MapBox = (function (_React$Component) {
       this.setState({ map: map });
     }
   }, {
+    key: 'addMarker',
+    value: function addMarker(lat, lng, style, popup) {
+      var m = L.marker([lat, lng], {
+        icon: L.mapbox.marker.icon(style)
+      });
+
+      if (popup) m.bindPopup(popup, {
+        closeButton: false,
+        minWidth: 400
+      });
+
+      m.addTo(this.state.map);
+
+      this.state.markers.push(m); // avoid render
+    }
+  }, {
+    key: 'clearMarkers',
+    value: function clearMarkers() {
+      var _this4 = this;
+
+      this.state.markers.forEach(function (_) {
+        return _this4.state.map.removeLayer(_);
+      });
+    }
+  }, {
     key: 'render',
     value: function render() {
+      var _this5 = this;
+
+      if (!this.state.map) return _react2.default.createElement('div', null);
+
+      var maxDistance = this.props.maxDistance;
+      var _state = this.state;
+      var houses = _state.houses;
+      var map = _state.map;
+      var trainStations = _state.trainStations;
+
+      this.clearMarkers();
+
+      var nearWork = houses.filter(function (h) {
+        return (0, _gcDistance.haversineDistance)(h.lat, h.lng, WORK[0], WORK[1]) < maxDistance;
+      });
+      var nearTrain = houses.filter(function (h) {
+        return trainStations.some(function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 2);
+
+          var s = _ref2[0];
+          var latLng = _ref2[1];
+          return (0, _gcDistance.haversineDistance)(h.lat, h.lng, latLng[0], latLng[1]) < maxDistance;
+        });
+      }).filter(function (h) {
+        return nearWork.indexOf(h) < 0;
+      });
+
+      // near train markers
+      nearTrain.forEach(function (r) {
+        _this5.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': '#fa0' }, _this5.generatePopup(r));
+      });
+
+      // near work markers
+      nearWork.forEach(function (r) {
+        _this5.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': '#088E46' }, _this5.generatePopup(r));
+      });
+
+      // caltrain markers
+      trainStations.forEach(function (_ref3) {
+        var _ref4 = _slicedToArray(_ref3, 2);
+
+        var s = _ref4[0];
+        var latLng = _ref4[1];
+
+        _this5.addMarker(latLng[0], latLng[1], { 'marker-size': 'medium', 'marker-color': '#ccc' }, null);
+      });
+
+      // work marker
+      this.addMarker(WORK[0], WORK[1], { 'marker-size': 'medium', 'marker-color': '#3BB2D0' }, null);
+
       return _react2.default.createElement('div', { className: 'MapBox' });
     }
   }]);
@@ -19647,15 +19744,73 @@ exports.default = MapBox;
 
 MapBox.propTypes = {
   accessToken: _react2.default.PropTypes.string.isRequired,
-  mapId: _react2.default.PropTypes.string.isRequired
+  mapId: _react2.default.PropTypes.string.isRequired,
+  maxDistance: _react2.default.PropTypes.number.isRequired
 };
 
-},{"./stations/bart":175,"./stations/caltrain":176,"gc-distance":28,"lodash/flatten":29,"react":172,"react-dom":43}],174:[function(require,module,exports){
+},{"./stations/bart":177,"./stations/caltrain":178,"gc-distance":28,"lodash/flatten":29,"react":172,"react-dom":43}],175:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var MapControls = (function (_React$Component) {
+	_inherits(MapControls, _React$Component);
+
+	function MapControls() {
+		_classCallCheck(this, MapControls);
+
+		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MapControls).call(this));
+
+		_this.state = {
+			maxDistance: 1
+		};
+		return _this;
+	}
+
+	_createClass(MapControls, [{
+		key: "onChangeDistance",
+		value: function onChangeDistance(event) {
+			this.setState({ maxDistance: Number(event.target.value) });
+			this.props.onChangeDistance(this.state.maxDistance);
+		}
+	}, {
+		key: "render",
+		value: function render() {
+			return _react2.default.createElement(
+				"div",
+				{ className: "MapControls" },
+				"Max distance ",
+				_react2.default.createElement("input", { type: "range", min: "1", max: "10", step: "1", onChange: this.onChangeDistance.bind(this), value: this.state.maxDistance }),
+				" ",
+				this.state.maxDistance,
+				" miles"
+			);
+		}
+	}]);
+
+	return MapControls;
+})(_react2.default.Component);
+
+exports.default = MapControls;
+
+},{"react":172}],176:[function(require,module,exports){
 'use strict';
-
-var _MapBox = require('./MapBox.jsx');
-
-var _MapBox2 = _interopRequireDefault(_MapBox);
 
 var _react = require('react');
 
@@ -19665,14 +19820,15 @@ var _reactDom = require('react-dom');
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
+var _App = require('./App.jsx');
+
+var _App2 = _interopRequireDefault(_App);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_reactDom2.default.render(_react2.default.createElement(_MapBox2.default, {
-  accessToken: 'pk.eyJ1IjoiYmNoZXJueSIsImEiOiJjaWd6cGdseWoweDNwd3ltMGhsenI1d2tvIn0.jzRreSEiv5JLGK2DcHyuug',
-  mapId: 'bcherny.e97e6efa'
-}), document.getElementById('App'));
+_reactDom2.default.render(_react2.default.createElement(_App2.default, null), document.getElementById('App'));
 
-},{"./MapBox.jsx":173,"react":172,"react-dom":43}],175:[function(require,module,exports){
+},{"./App.jsx":173,"react":172,"react-dom":43}],177:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -19695,7 +19851,7 @@ function get() {
   });
 }
 
-},{}],176:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -19708,4 +19864,4 @@ function get() {
   return Promise.resolve(CALTRAIN_STATIONS);
 }
 
-},{}]},{},[174]);
+},{}]},{},[176]);

@@ -1,11 +1,8 @@
-import MapBox from './MapBox.jsx'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import App from './App.jsx'
 
 ReactDOM.render(
-  <MapBox
-  	accessToken={ 'pk.eyJ1IjoiYmNoZXJueSIsImEiOiJjaWd6cGdseWoweDNwd3ltMGhsenI1d2tvIn0.jzRreSEiv5JLGK2DcHyuug' }
-  	mapId={ 'bcherny.e97e6efa' }
-  />,
+  <App />,
   document.getElementById('App')
 )
