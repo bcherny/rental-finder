@@ -1,0 +1,22 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "content-type": "application/json",
+    "last-modified": "Sat, 23 Jan 2016 20:19:11 GMT",
+    "cache-control": "public, max-age=900",
+    "date": "Sat, 23 Jan 2016 20:19:11 GMT",
+    "set-cookie": [
+      "cl_b=phxokA7C5RGtiSyrMiKlage9Mdg;path=/;domain=.craigslist.org;expires=Fri, 01-Jan-2038 00:00:00 GMT"
+    ],
+    "content-length": "990"
+  },
+  "url": "http://sfbay.craigslist.org:80/jsonsearch/apa/eby?geocluster=102577998776&key=b7Ieh-Rc_8mQN_bvARIS-w&max_price=1000000",
+  "time": 286,
+  "request": {
+    "method": "GET",
+    "headers": {
+      "host": "sfbay.craigslist.org",
+      "accept": "application/json"
+    }
+  }
+}

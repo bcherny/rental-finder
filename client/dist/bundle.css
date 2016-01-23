@@ -19,6 +19,13 @@ body,
   overflow: auto;
 }
 
+/* probably against the terms */
+
+.mapbox-logo,
+.leaflet-bottom.leaflet-right {
+  display: none;
+}
+
 .price {
   float: right;
   margin-bottom: 10px;

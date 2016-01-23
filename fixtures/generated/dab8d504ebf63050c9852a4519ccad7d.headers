@@ -2,16 +2,16 @@
   "statusCode": 200,
   "headers": {
     "content-type": "application/json",
-    "last-modified": "Tue, 08 Dec 2015 07:10:39 GMT",
+    "last-modified": "Sat, 23 Jan 2016 20:18:50 GMT",
     "cache-control": "public, max-age=900",
-    "date": "Tue, 08 Dec 2015 07:10:39 GMT",
+    "date": "Sat, 23 Jan 2016 20:18:50 GMT",
     "set-cookie": [
-      "cl_b=oIEkyXqd5RGNLma5ehmp2gfIBiY;path=/;domain=.craigslist.org;expires=Fri, 01-Jan-2038 00:00:00 GMT"
+      "cl_b=HjSVgw7C5RGEJApqcQ0mPg0htd8;path=/;domain=.craigslist.org;expires=Fri, 01-Jan-2038 00:00:00 GMT"
     ],
-    "content-length": "476238"
+    "content-length": "451282"
   },
   "url": "http://sfbay.craigslist.org:80/jsonsearch/apa/pen?max_price=1000000",
-  "time": 734,
+  "time": 14157,
   "request": {
     "method": "GET",
     "headers": {

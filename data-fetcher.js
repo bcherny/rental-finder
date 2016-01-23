@@ -10,13 +10,19 @@ class House {
 	}
 }
 
-const getURL = maxPrice => `http://sfbay.craigslist.org/jsonsearch/apa/pen?max_price=${ maxPrice }`
+const getURLs = maxPrice => [
+	`http://sfbay.craigslist.org/jsonsearch/apa/eby?max_price=${ maxPrice }`,
+	`http://sfbay.craigslist.org/jsonsearch/apa/pen?max_price=${ maxPrice }`,
+	`http://sfbay.craigslist.org/jsonsearch/apa/sfc?max_price=${ maxPrice }`
+]
 const getGeoClusterURL = (maxPrice, clusterUrl) => `http://sfbay.craigslist.org${ clusterUrl }&max_price=${ maxPrice }`
 
 // (maxPrice: Number) => Promise[Array[Object]]
 function fetchPosts (maxPrice) {
 	// console.info(`fetch: <= $${ maxPrice }`)
-	return request({ json: true, url: getURL(maxPrice) })
+	return Promise.all(
+		getURLs(maxPrice).map(url => request({ json: true, url }))
+	).then(flatten)
 }
 
 // (maxPrice: Number, clusterUrl: String) => Promise[Array[Object]]

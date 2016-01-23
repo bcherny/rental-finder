@@ -1,0 +1,12 @@
+{
+  "timeout": true,
+  "time": 0,
+  "url": "http://sfbay.craigslist.org:80/jsonsearch/apa/eby?geocluster=102577991372&key=o2t6oNZo0rVVFDcb7D-F6g&max_price=1000000",
+  "request": {
+    "method": "GET",
+    "headers": {
+      "host": "sfbay.craigslist.org",
+      "accept": "application/json"
+    }
+  }
+}

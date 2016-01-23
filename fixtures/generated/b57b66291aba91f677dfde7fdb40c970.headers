@@ -1,0 +1,22 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "content-type": "application/json",
+    "last-modified": "Sat, 23 Jan 2016 20:18:50 GMT",
+    "cache-control": "public, max-age=900",
+    "date": "Sat, 23 Jan 2016 20:18:50 GMT",
+    "set-cookie": [
+      "cl_b=zi6Vgw7C5RGbpu6buk2n_g6KG8o;path=/;domain=.craigslist.org;expires=Fri, 01-Jan-2038 00:00:00 GMT"
+    ],
+    "content-length": "679671"
+  },
+  "url": "http://sfbay.craigslist.org:80/jsonsearch/apa/sfc?max_price=1000000",
+  "time": 16209,
+  "request": {
+    "method": "GET",
+    "headers": {
+      "host": "sfbay.craigslist.org",
+      "accept": "application/json"
+    }
+  }
+}
