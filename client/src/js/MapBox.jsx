@@ -10,6 +10,15 @@ const MAP_ZOOM = 12
 const MAX_PRICE = 1300
 const WORK = [37.7809332, -122.4156281]
 
+const COLORS = {
+  APT_NEAR_WORK: '#088E46',
+  APT_NEAR_TRAIN: '#088E46',
+  ROOM_NEAR_WORK: '#fa0',
+  ROOM_NEAR_TRAIN: '#fa0',
+  TRAIN_STATION: '#ccc',
+  WORK: '#3BB2D0'
+}
+
 // (void) => Promise[Array[Array]]
 function getTrainStations() {
   return Promise
@@ -103,7 +112,7 @@ export default class MapBox extends React.Component {
       this.addMarker(
         r.lat,
         r.lng,
-        { 'marker-size': 'large', 'marker-color': '#fa0' },
+        { 'marker-size': 'large', 'marker-color': r.type == 'room' ? COLORS.ROOM_NEAR_TRAIN : COLORS.APT_NEAR_TRAIN },
         this.generatePopup(r)
       )
     })
@@ -113,7 +122,7 @@ export default class MapBox extends React.Component {
       this.addMarker(
         r.lat,
         r.lng,
-        { 'marker-size': 'large', 'marker-color': '#088E46' },
+        { 'marker-size': 'large', 'marker-color': r.type == 'room' ? COLORS.ROOM_NEAR_WORK : COLORS.APT_NEAR_WORK },
         this.generatePopup(r)
       )
     })
@@ -123,8 +132,7 @@ export default class MapBox extends React.Component {
       this.addMarker(
         latLng[0],
         latLng[1],
-        { 'marker-size': 'medium', 'marker-color': '#ccc' },
-        null
+        { 'marker-size': 'medium', 'marker-color': COLORS.TRAIN_STATION }
       )
     })
 
@@ -132,8 +140,7 @@ export default class MapBox extends React.Component {
     this.addMarker(
       WORK[0],
       WORK[1],
-      { 'marker-size': 'medium', 'marker-color': '#3BB2D0' },
-      null
+      { 'marker-size': 'medium', 'marker-color': COLORS.WORK }
     )
 
     return <div className="MapBox"></div>

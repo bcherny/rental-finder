@@ -19593,6 +19593,15 @@ var MAP_ZOOM = 12;
 var MAX_PRICE = 1300;
 var WORK = [37.7809332, -122.4156281];
 
+var COLORS = {
+  APT_NEAR_WORK: '#088E46',
+  APT_NEAR_TRAIN: '#088E46',
+  ROOM_NEAR_WORK: '#fa0',
+  ROOM_NEAR_TRAIN: '#fa0',
+  TRAIN_STATION: '#ccc',
+  WORK: '#3BB2D0'
+};
+
 // (void) => Promise[Array[Array]]
 function _getTrainStations() {
   return Promise.all([(0, _bart.get)(), (0, _caltrain.get)()]).then(_flatten2.default);
@@ -19712,12 +19721,12 @@ var MapBox = (function (_React$Component) {
 
       // near train markers
       nearTrain.forEach(function (r) {
-        _this5.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': '#fa0' }, _this5.generatePopup(r));
+        _this5.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': r.type == 'room' ? COLORS.ROOM_NEAR_TRAIN : COLORS.APT_NEAR_TRAIN }, _this5.generatePopup(r));
       });
 
       // near work markers
       nearWork.forEach(function (r) {
-        _this5.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': '#088E46' }, _this5.generatePopup(r));
+        _this5.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': r.type == 'room' ? COLORS.ROOM_NEAR_WORK : COLORS.APT_NEAR_WORK }, _this5.generatePopup(r));
       });
 
       // caltrain markers
@@ -19727,11 +19736,11 @@ var MapBox = (function (_React$Component) {
         var s = _ref4[0];
         var latLng = _ref4[1];
 
-        _this5.addMarker(latLng[0], latLng[1], { 'marker-size': 'medium', 'marker-color': '#ccc' }, null);
+        _this5.addMarker(latLng[0], latLng[1], { 'marker-size': 'medium', 'marker-color': COLORS.TRAIN_STATION });
       });
 
       // work marker
-      this.addMarker(WORK[0], WORK[1], { 'marker-size': 'medium', 'marker-color': '#3BB2D0' }, null);
+      this.addMarker(WORK[0], WORK[1], { 'marker-size': 'medium', 'marker-color': COLORS.WORK });
 
       return _react2.default.createElement('div', { className: 'MapBox' });
     }

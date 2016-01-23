@@ -10,12 +10,14 @@ class House {
 	}
 }
 
-const getURLs = maxPrice => [
-	`http://sfbay.craigslist.org/jsonsearch/apa/eby?max_price=${ maxPrice }`,
-	`http://sfbay.craigslist.org/jsonsearch/apa/pen?max_price=${ maxPrice }`,
-	`http://sfbay.craigslist.org/jsonsearch/apa/sfc?max_price=${ maxPrice }`
-]
-const getGeoClusterURL = (maxPrice, clusterUrl) => `http://sfbay.craigslist.org${ clusterUrl }&max_price=${ maxPrice }`
+const AREA = 'sfbay'
+const SUBAREAS = ['eby', 'pen', 'sby', 'sfc']
+
+const getURLs = maxPrice => flatten(SUBAREAS.map(_ => [
+	`http://${AREA}.craigslist.org/jsonsearch/apa/${_}?max_price=${ maxPrice }`,
+	`http://${AREA}.craigslist.org/jsonsearch/${_}/roo?max_price=${ maxPrice }`
+]))
+const getGeoClusterURL = (maxPrice, clusterUrl) => `http://${AREA}.craigslist.org${ clusterUrl }&max_price=${ maxPrice }`
 
 // (maxPrice: Number) => Promise[Array[Object]]
 function fetchPosts (maxPrice) {
@@ -67,7 +69,8 @@ export function fetch (maxPrice) {
 			price: Number(h.Ask),
 			title: h.PostingTitle,
 			url: h.PostingURL,
-			photos: h.ImageThumb ? getPhotos(h.ImageThumb) : []
+			photos: h.ImageThumb ? getPhotos(h.ImageThumb) : [],
+			type: h.PostingURL.includes('/roo/') ? 'room' : 'apt'
 		})))
 		// TODO: put results in db
 		.catch(e => console.error(e))
