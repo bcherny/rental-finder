@@ -19,8 +19,11 @@ const getGeoClusterURL = (area, clusterUrl) => `http://${area}.craigslist.org${ 
 // (area: String, subareas: Array[String]) => Promise[Array[Object]]
 function fetchPosts (area, subareas) {
 	return Promise.all(
-		getURLs(area, subareas).map(url => request({ json: true, url }))
-	).then(flatten)
+		getURLs(area, subareas).map(url => {
+			console.log('request', url)
+			return request({ json: true, url })
+		})
+	).then(flatten).then(flatten)
 }
 
 // (area: String, clusterUrl: String) => Promise[Array[Object]]
@@ -52,7 +55,6 @@ export function getProgress () {
 // (area: String, subareas: Array[String]) => Promise[Array[House]]
 export function fetch (area, subareas) {
 	return fetchPosts(area, subareas)
-		.then(_ => _[0])
 		.then(hs => partition(hs, 'GeoCluster'))
 		.then(phs => {
 			console.log('got', phs[0].length)

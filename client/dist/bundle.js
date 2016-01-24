@@ -19626,7 +19626,7 @@ var App = (function (_React$Component2) {
           return _react2.default.createElement(
             'div',
             { className: 'LoadingArea' },
-            'Almost ready...'
+            'Get ready...'
           );
         case 'loading':
           return _react2.default.createElement(
@@ -19636,6 +19636,7 @@ var App = (function (_React$Component2) {
             this.state.dataLoader.elapsed,
             '/',
             this.state.dataLoader.total,
+            ' apartments + rooms',
             _react2.default.createElement(ProgressBar, { elapsed: this.state.dataLoader.elapsed, total: this.state.dataLoader.total })
           );
         case 'done':

@@ -72,9 +72,9 @@ export default class App extends React.Component {
 
     switch (this.state.dataLoader.status) {
       case '': return <div className="LoadingArea"></div>
-      case 'starting': return <div className="LoadingArea">Almost ready...</div>
+      case 'starting': return <div className="LoadingArea">Get ready...</div>
       case 'loading': return <div className="LoadingArea">
-          Loaded {this.state.dataLoader.elapsed}/{this.state.dataLoader.total}
+          Loaded {this.state.dataLoader.elapsed}/{this.state.dataLoader.total} apartments + rooms
           <ProgressBar elapsed={this.state.dataLoader.elapsed} total={this.state.dataLoader.total} />
         </div>
       case 'done': return <div>
