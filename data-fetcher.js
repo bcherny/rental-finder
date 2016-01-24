@@ -18,7 +18,6 @@ const getGeoClusterURL = (area, clusterUrl) => `http://${area}.craigslist.org${ 
 
 // (area: String, subareas: Array[String]) => Promise[Array[Object]]
 function fetchPosts (area, subareas) {
-	console.info('fetchPosts', area, subareas)
 	return Promise.all(
 		getURLs(area, subareas).map(url => request({ json: true, url }))
 	).then(flatten)
@@ -26,7 +25,6 @@ function fetchPosts (area, subareas) {
 
 // (area: String, clusterUrl: String) => Promise[Array[Object]]
 function fetchCluster (area, clusterUrl) {
-	console.info('fetchCluster', area, clusterUrl)
 	return request({ json: true, url: getGeoClusterURL(area, clusterUrl) })
 }
 
@@ -39,6 +37,18 @@ function getPhotos (urls) {
 		.map(u => `http://images.craigslist.org/${ u }_300x300.jpg`)
 }
 
+const state = {
+	progress: {
+		elapsed: -1,
+		total: -1
+	}
+}
+
+// (void) => Object[String]
+export function getProgress () {
+	return state.progress
+}
+
 // (area: String, subareas: Array[String]) => Promise[Array[House]]
 export function fetch (area, subareas) {
 	return fetchPosts(area, subareas)
@@ -47,12 +57,15 @@ export function fetch (area, subareas) {
 		.then(phs => {
 			console.log('got', phs[0].length)
 
-			let bar = new ProgressBar(':bar', { total: phs[0].length })
+			state.progress.total = phs[0].length
+			state.progress.elapsed = 0
+			const bar = new ProgressBar(':bar', { total: phs[0].length })
 
 			// query for clustered posts sequentially, in random chunks of 10-30 at a time
 			return seq(
 				chunk(phs[0], random(10, 30))
 					.map(hs => () => Promise.all(hs.map(h => fetchCluster(area, h.url).then(h => {
+						state.progress.elapsed++
 						bar.tick()
 						return h
 					}))))

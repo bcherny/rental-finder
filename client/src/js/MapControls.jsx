@@ -39,7 +39,7 @@ export default class MapControls extends React.Component {
       	Max price $<input type="number" min="100" max="20000" step="10" onChange={this.onChangeMaxPrice.bind(this)} value={this.state.maxPrice} />
       </label>
       <label>
-      	Work address $<input type="text" value={this.state.workAddress} defaultValue="601 Vallejo St., San Francisco" onChange={this.onChangeWorkAddress.bind(this)} />
+      	Work address $<input type="text" value={this.state.workAddress} defaultValue="601 Vallejo St., San Francisco" onChange={this.onChangeWorkAddress.bind(this)} style={{ width: '150px' }} />
       	<button onClick={this.onSubmitWorkAddress.bind(this)}>Update</button>
       </label>
       <label className="pull-right">

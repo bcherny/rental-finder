@@ -19509,26 +19509,84 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var App = (function (_React$Component) {
-  _inherits(App, _React$Component);
+var ProgressBar = (function (_React$Component) {
+  _inherits(ProgressBar, _React$Component);
+
+  function ProgressBar() {
+    _classCallCheck(this, ProgressBar);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(ProgressBar).apply(this, arguments));
+  }
+
+  _createClass(ProgressBar, [{
+    key: 'render',
+    value: function render() {
+      return _react2.default.createElement(
+        'div',
+        { className: 'ProgressBar' },
+        _react2.default.createElement('div', { className: 'ProgressBar-Inner', style: { width: 100 * this.props.elapsed / this.props.total + '%' } })
+      );
+    }
+  }]);
+
+  return ProgressBar;
+})(_react2.default.Component);
+
+var App = (function (_React$Component2) {
+  _inherits(App, _React$Component2);
 
   function App() {
     _classCallCheck(this, App);
 
-    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this));
+    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this));
 
-    _this.state = {
+    _this2.state = {
+      dataLoader: {
+        status: '',
+        elapsed: -1,
+        total: -1
+      },
       maxDistance: 1,
       maxPrice: 1200,
       results: [],
       workAddress: '601 Vallejo St., San Francisco'
     };
-    return _this;
+    return _this2;
   }
 
-  // (maxDistance: Number) => void
-
   _createClass(App, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      this.pollForStatus();
+    }
+  }, {
+    key: 'pollForStatus',
+    value: function pollForStatus() {
+      var _this3 = this;
+
+      fetch('/api/status').then(function (_) {
+        return _.json();
+      }).then(function (_) {
+        if (_.elapsed > -1 && _.elapsed == _.total) {
+          _this3.setState(Object.assign({}, _this3.state, { dataLoader: { status: 'done' } }));
+        } else if (_.elapsed > -1) {
+          _this3.setState(Object.assign({}, _this3.state, { dataLoader: { elapsed: _.elapsed, total: _.total, status: 'loading' } }));
+          _this3.pollAgain();
+        } else {
+          _this3.setState(Object.assign({}, _this3.state, { dataLoader: { status: 'starting' } }));
+          _this3.pollAgain();
+        }
+      });
+    }
+  }, {
+    key: 'pollAgain',
+    value: function pollAgain() {
+      setTimeout(this.pollForStatus.bind(this), 10);
+    }
+
+    // (maxDistance: Number) => void
+
+  }, {
     key: 'onChangeMaxDistance',
     value: function onChangeMaxDistance(maxDistance) {
       this.setState(Object.assign({}, this.state, { maxDistance: maxDistance }));
@@ -19560,24 +19618,46 @@ var App = (function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      return _react2.default.createElement(
-        'div',
-        null,
-        _react2.default.createElement(_MapBox2.default, {
-          accessToken: 'pk.eyJ1IjoiYmNoZXJueSIsImEiOiJjaWd6cGdseWoweDNwd3ltMGhsenI1d2tvIn0.jzRreSEiv5JLGK2DcHyuug',
-          maxDistance: this.state.maxDistance,
-          maxPrice: this.state.maxPrice,
-          mapId: 'bcherny.e97e6efa',
-          onResultsChanged: this.onResultsChanged.bind(this),
-          workAddress: this.state.workAddress
-        }),
-        _react2.default.createElement(_MapControls2.default, {
-          onChangeMaxDistance: this.onChangeMaxDistance.bind(this),
-          onChangeMaxPrice: this.onChangeMaxPrice.bind(this),
-          onChangeWorkAddress: this.onChangeWorkAddress.bind(this),
-          results: this.state.results
-        })
-      );
+
+      switch (this.state.dataLoader.status) {
+        case '':
+          return _react2.default.createElement('div', { className: 'LoadingArea' });
+        case 'starting':
+          return _react2.default.createElement(
+            'div',
+            { className: 'LoadingArea' },
+            'Almost ready...'
+          );
+        case 'loading':
+          return _react2.default.createElement(
+            'div',
+            { className: 'LoadingArea' },
+            'Loaded ',
+            this.state.dataLoader.elapsed,
+            '/',
+            this.state.dataLoader.total,
+            _react2.default.createElement(ProgressBar, { elapsed: this.state.dataLoader.elapsed, total: this.state.dataLoader.total })
+          );
+        case 'done':
+          return _react2.default.createElement(
+            'div',
+            null,
+            _react2.default.createElement(_MapBox2.default, {
+              accessToken: 'pk.eyJ1IjoiYmNoZXJueSIsImEiOiJjaWd6cGdseWoweDNwd3ltMGhsenI1d2tvIn0.jzRreSEiv5JLGK2DcHyuug',
+              maxDistance: this.state.maxDistance,
+              maxPrice: this.state.maxPrice,
+              mapId: 'bcherny.e97e6efa',
+              onResultsChanged: this.onResultsChanged.bind(this),
+              workAddress: this.state.workAddress
+            }),
+            _react2.default.createElement(_MapControls2.default, {
+              onChangeMaxDistance: this.onChangeMaxDistance.bind(this),
+              onChangeMaxPrice: this.onChangeMaxPrice.bind(this),
+              onChangeWorkAddress: this.onChangeWorkAddress.bind(this),
+              results: this.state.results
+            })
+          );
+      }
     }
   }]);
 
@@ -19972,7 +20052,7 @@ var MapControls = (function (_React$Component) {
 					"label",
 					null,
 					"Work address $",
-					_react2.default.createElement("input", { type: "text", value: this.state.workAddress, defaultValue: "601 Vallejo St., San Francisco", onChange: this.onChangeWorkAddress.bind(this) }),
+					_react2.default.createElement("input", { type: "text", value: this.state.workAddress, defaultValue: "601 Vallejo St., San Francisco", onChange: this.onChangeWorkAddress.bind(this), style: { width: '150px' } }),
 					_react2.default.createElement(
 						"button",
 						{ onClick: this.onSubmitWorkAddress.bind(this) },

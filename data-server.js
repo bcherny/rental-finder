@@ -1,4 +1,4 @@
-import { fetch } from './data-fetcher'
+import { fetch, getProgress } from './data-fetcher'
 import express from 'express'
 
 const HTTP_PORT = 4002
@@ -11,24 +11,37 @@ console.info('fetching data...')
 const state = {
 	houses: []
 }
-fetch(AREA, SUBAREAS).then(hs => {
-	console.info(`fetched ${ hs.length } houses`)
-	state.houses = hs
-})
-startServer()
 
-function startServer () {
+export function fetchData () {
+	return fetch(AREA, SUBAREAS).then(hs => {
+		console.info(`fetched ${ hs.length } houses`)
+		state.houses = hs
+	})
+}
+
+export function startServer (httpPort) {
+
+	const port = httpPort || HTTP_PORT
 
 	console.info('starting server...')
-	express()
-		.use((req, res, next) => {
-			console.info(req.method, req.path, req.query)
-			next()
-		})
-		.get('/api/houses', (req, res) => {
-			res.send(state.houses)
-		})
-		.get('*', express.static(`${ __dirname }/client/dist`))
-		.listen(HTTP_PORT, () => console.info(`started HTTP server on port ${ HTTP_PORT }`))
+
+	return new Promise(resolve =>
+		express()
+			.use((req, res, next) => {
+				console.info(req.method, req.path, req.query)
+				next()
+			})
+			.get('/api/status', (req, res) => {
+				res.send(getProgress())
+			})
+			.get('/api/houses', (req, res) => {
+				res.send(state.houses)
+			})
+			.get('*', express.static(`${ __dirname }/client/dist`))
+			.listen(port, () => {
+				console.info(`started HTTP server on port ${ port }`)
+				resolve()
+			})
+	)
 
 }
