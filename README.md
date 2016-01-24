@@ -1,3 +1,5 @@
+![](https://raw.githubusercontent.com/bcherny/rental-finder/master/screenie.png)
+
 ## how to run
 
 ```sh
