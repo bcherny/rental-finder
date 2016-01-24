@@ -5,10 +5,11 @@ export function get () {
     fetch(URL).then(_ => _.text()).then(_ => {
         const parser = new DOMParser();
         const barts = Array.from(parser.parseFromString(_, 'application/xml').querySelectorAll('station')).map(_ => {
-          return [
-            _.querySelector('name').innerText,
-            [_.querySelector('gtfs_latitude').innerHTML, _.querySelector('gtfs_longitude').innerHTML]
-          ]
+          return {
+            title: _.querySelector('name').innerText,
+            lat: Number(_.querySelector('gtfs_latitude').innerHTML),
+            lng: Number(_.querySelector('gtfs_longitude').innerHTML)
+          }
         })
         resolve(barts)
       })

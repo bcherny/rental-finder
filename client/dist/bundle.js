@@ -19519,7 +19519,9 @@ var App = (function (_React$Component) {
 
     _this.state = {
       maxDistance: 1,
-      maxPrice: 1200
+      maxPrice: 1200,
+      results: [],
+      workAddress: '601 Vallejo St., San Francisco'
     };
     return _this;
   }
@@ -19539,6 +19541,22 @@ var App = (function (_React$Component) {
     value: function onChangeMaxPrice(maxPrice) {
       this.setState(Object.assign({}, this.state, { maxPrice: maxPrice }));
     }
+
+    // (workAddress: String) => void
+
+  }, {
+    key: 'onChangeWorkAddress',
+    value: function onChangeWorkAddress(workAddress) {
+      this.setState(Object.assign({}, this.state, { workAddress: workAddress }));
+    }
+
+    // (results: Array[Object]) => void
+
+  }, {
+    key: 'onResultsChanged',
+    value: function onResultsChanged(results) {
+      this.setState(Object.assign({}, this.results, { results: results }));
+    }
   }, {
     key: 'render',
     value: function render() {
@@ -19549,9 +19567,16 @@ var App = (function (_React$Component) {
           accessToken: 'pk.eyJ1IjoiYmNoZXJueSIsImEiOiJjaWd6cGdseWoweDNwd3ltMGhsenI1d2tvIn0.jzRreSEiv5JLGK2DcHyuug',
           maxDistance: this.state.maxDistance,
           maxPrice: this.state.maxPrice,
-          mapId: 'bcherny.e97e6efa'
+          mapId: 'bcherny.e97e6efa',
+          onResultsChanged: this.onResultsChanged.bind(this),
+          workAddress: this.state.workAddress
         }),
-        _react2.default.createElement(_MapControls2.default, { onChangeMaxDistance: this.onChangeMaxDistance.bind(this), onChangeMaxPrice: this.onChangeMaxPrice.bind(this) })
+        _react2.default.createElement(_MapControls2.default, {
+          onChangeMaxDistance: this.onChangeMaxDistance.bind(this),
+          onChangeMaxPrice: this.onChangeMaxPrice.bind(this),
+          onChangeWorkAddress: this.onChangeWorkAddress.bind(this),
+          results: this.state.results
+        })
       );
     }
   }]);
@@ -19563,8 +19588,6 @@ exports.default = App;
 
 },{"./MapBox.jsx":174,"./MapControls.jsx":175,"react":172}],174:[function(require,module,exports){
 'use strict';
-
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -19601,7 +19624,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var MAP_CENTER = [37.7809332, -122.4156281];
 var MAP_ZOOM = 12;
 var MAX_PRICE = 1300;
-var WORK = [37.7809332, -122.4156281];
+// const WORK = [37.7809332, -122.4156281]
 
 var COLORS = {
   APT_NEAR_WORK: '#088E46',
@@ -19611,11 +19634,6 @@ var COLORS = {
   TRAIN_STATION: '#ccc',
   WORK: '#3BB2D0'
 };
-
-// (void) => Promise[Array[Array]]
-function _getTrainStations() {
-  return Promise.all([(0, _bart.get)(), (0, _caltrain.get)()]).then(_flatten2.default);
-}
 
 var MapBox = (function (_React$Component) {
   _inherits(MapBox, _React$Component);
@@ -19628,7 +19646,8 @@ var MapBox = (function (_React$Component) {
     _this.state = {
       houses: [],
       markers: [],
-      trainStations: []
+      trainStations: [],
+      workLatLng: null
     };
     _this.getHouses();
     _this.getTrainStations();
@@ -19643,11 +19662,41 @@ var MapBox = (function (_React$Component) {
       }).join('') + '\n      </a>\n    ';
     }
   }, {
+    key: 'getTravelTime',
+    value: function getTravelTime(lat0, lng0, lat1, lng1) {
+      return fetch('https://api.mapbox.com/distances/v1/mapbox/driving?access_token=' + this.props.accessToken, {
+        body: JSON.stringify({
+          coordinates: [[lat0, lng0], [lat1, lng1]]
+        }),
+        method: 'post'
+      }).then(function (_) {
+        return _.json();
+      }).then(function (_) {
+        console.log('got dist', _);
+        return _;
+      });
+    }
+
+    // (address: String) => Promise[{ lat: Number, lng: Number }]
+
+  }, {
+    key: 'geocode',
+    value: function geocode(address) {
+      return new Promise(function (resolve, reject) {
+        L.mapbox.geocoder('mapbox.places').query(address, function (err, data) {
+          if (err) {
+            return reject(err);
+          }
+          resolve({ lat: data.latlng[0], lng: data.latlng[1] });
+        });
+      });
+    }
+  }, {
     key: 'getHouses',
     value: function getHouses() {
       var _this2 = this;
 
-      fetch('/api/houses?max_price=' + MAX_PRICE).then(function (_) {
+      fetch('/api/houses').then(function (_) {
         return _.json();
       }).then(function (houses) {
         console.info('got houses!', houses);
@@ -19659,7 +19708,7 @@ var MapBox = (function (_React$Component) {
     value: function getTrainStations() {
       var _this3 = this;
 
-      _getTrainStations().then(function (trainStations) {
+      Promise.all([(0, _bart.get)(), (0, _caltrain.get)()]).then(_flatten2.default).then(function (trainStations) {
         console.info('got train stations!', trainStations);
         _this3.setState(Object.assign({}, _this3.state, { trainStations: trainStations }));
       });
@@ -19667,12 +19716,52 @@ var MapBox = (function (_React$Component) {
   }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
+      var _this4 = this;
+
       L.mapbox.accessToken = this.props.accessToken;
 
       var map = L.mapbox.map(_reactDom2.default.findDOMNode(this), this.props.mapId);
       map.setView(MAP_CENTER, MAP_ZOOM);
 
       this.setState({ map: map });
+
+      // geocode work address?
+      if (this.props.workAddress) {
+        this.geocode(this.props.workAddress).then(function (workLatLng) {
+          return _this4.setState(Object.assign({}, _this4.state, { workLatLng: workLatLng }));
+        });
+      }
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate() {
+      this.state.map.invalidateSize();
+
+      // update results count
+
+      var _computeResults = this.computeResults();
+
+      var nearWork = _computeResults.nearWork;
+      var nearTrain = _computeResults.nearTrain;
+
+      this.props.onResultsChanged((0, _flatten2.default)(nearTrain, nearWork));
+    }
+  }, {
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {
+      var _this5 = this;
+
+      // geocode work address?
+      if (!this.state.workLatLng || nextProps.workAddress !== this.props.workAddress) {
+        this.geocode(nextProps.workAddress).then(function (workLatLng) {
+          return _this5.setState(Object.assign({}, _this5.state, { workLatLng: workLatLng }));
+        });
+      }
+    }
+  }, {
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      return nextState.map && !this.state.map || nextState.houses.length && !this.state.houses.length || nextState.trainStations.length && !this.state.trainStations.length || nextState.workLatLng !== this.state.workLatLng || nextProps.maxDistance !== this.props.maxDistance || nextProps.maxPrice !== this.props.maxPrice;
     }
   }, {
     key: 'addMarker',
@@ -19693,70 +19782,87 @@ var MapBox = (function (_React$Component) {
   }, {
     key: 'clearMarkers',
     value: function clearMarkers() {
-      var _this4 = this;
+      var _this6 = this;
 
       this.state.markers.forEach(function (_) {
-        return _this4.state.map.removeLayer(_);
+        return _this6.state.map.removeLayer(_);
       });
     }
   }, {
-    key: 'render',
-    value: function render() {
-      var _this5 = this;
-
-      if (!this.state.map) return _react2.default.createElement('div', null);
+    key: 'computeResults',
+    value: function computeResults() {
+      var _this7 = this;
 
       var _props = this.props;
       var maxDistance = _props.maxDistance;
       var maxPrice = _props.maxPrice;
       var _state = this.state;
       var houses = _state.houses;
-      var map = _state.map;
       var trainStations = _state.trainStations;
-
-      this.clearMarkers();
 
       var nearWork = houses.filter(function (h) {
         return h.price <= maxPrice;
       }).filter(function (h) {
-        return (0, _gcDistance.haversineDistance)(h.lat, h.lng, WORK[0], WORK[1]) < maxDistance;
+        return (0, _gcDistance.haversineDistance)(h.lat, h.lng, _this7.state.workLatLng.lat, _this7.state.workLatLng.lng) <= maxDistance;
       });
       var nearTrain = houses.filter(function (h) {
         return h.price <= maxPrice;
       }).filter(function (h) {
         return trainStations.some(function (_ref) {
-          var _ref2 = _slicedToArray(_ref, 2);
-
-          var s = _ref2[0];
-          var latLng = _ref2[1];
-          return (0, _gcDistance.haversineDistance)(h.lat, h.lng, latLng[0], latLng[1]) < maxDistance;
+          var lat = _ref.lat;
+          var lng = _ref.lng;
+          return (0, _gcDistance.haversineDistance)(h.lat, h.lng, lat, lng) <= maxDistance;
         });
       }).filter(function (h) {
         return nearWork.indexOf(h) < 0;
       });
 
+      return { nearWork: nearWork, nearTrain: nearTrain };
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this8 = this;
+
+      if (!this.state.map || !this.state.workLatLng || !this.state.trainStations.length) return _react2.default.createElement('div', null);
+
+      this.clearMarkers();
+
+      var _props2 = this.props;
+      var maxDistance = _props2.maxDistance;
+      var maxPrice = _props2.maxPrice;
+      var _state2 = this.state;
+      var houses = _state2.houses;
+      var map = _state2.map;
+      var trainStations = _state2.trainStations;
+
+      var _computeResults2 = this.computeResults();
+
+      var nearWork = _computeResults2.nearWork;
+      var nearTrain = _computeResults2.nearTrain;
+
       // near train markers
+
       nearTrain.forEach(function (r) {
-        _this5.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': r.type == 'room' ? COLORS.ROOM_NEAR_TRAIN : COLORS.APT_NEAR_TRAIN }, _this5.generatePopup(r));
+        _this8.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': r.type == 'room' ? COLORS.ROOM_NEAR_TRAIN : COLORS.APT_NEAR_TRAIN }, _this8.generatePopup(r));
       });
 
       // near work markers
       nearWork.forEach(function (r) {
-        _this5.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': r.type == 'room' ? COLORS.ROOM_NEAR_WORK : COLORS.APT_NEAR_WORK }, _this5.generatePopup(r));
+        _this8.addMarker(r.lat, r.lng, { 'marker-size': 'large', 'marker-color': r.type == 'room' ? COLORS.ROOM_NEAR_WORK : COLORS.APT_NEAR_WORK }, _this8.generatePopup(r));
       });
 
       // caltrain markers
-      trainStations.forEach(function (_ref3) {
-        var _ref4 = _slicedToArray(_ref3, 2);
+      trainStations.forEach(function (_ref2) {
+        var title = _ref2.title;
+        var lat = _ref2.lat;
+        var lng = _ref2.lng;
 
-        var s = _ref4[0];
-        var latLng = _ref4[1];
-
-        _this5.addMarker(latLng[0], latLng[1], { 'marker-size': 'medium', 'marker-color': COLORS.TRAIN_STATION });
+        _this8.addMarker(lat, lng, { 'marker-size': 'medium', 'marker-color': COLORS.TRAIN_STATION }, title);
       });
 
       // work marker
-      this.addMarker(WORK[0], WORK[1], { 'marker-size': 'medium', 'marker-color': COLORS.WORK });
+      this.addMarker(this.state.workLatLng.lat, this.state.workLatLng.lng, { 'marker-size': 'medium', 'marker-color': COLORS.WORK }, 'Work');
 
       return _react2.default.createElement('div', { className: 'MapBox' });
     }
@@ -19771,7 +19877,8 @@ MapBox.propTypes = {
   accessToken: _react2.default.PropTypes.string.isRequired,
   mapId: _react2.default.PropTypes.string.isRequired,
   maxDistance: _react2.default.PropTypes.number.isRequired,
-  maxPrice: _react2.default.PropTypes.number.isRequired
+  maxPrice: _react2.default.PropTypes.number.isRequired,
+  workAddress: _react2.default.PropTypes.string
 };
 
 },{"./stations/bart":177,"./stations/caltrain":178,"gc-distance":28,"lodash/flatten":29,"react":172,"react-dom":43}],175:[function(require,module,exports){
@@ -19812,15 +19919,33 @@ var MapControls = (function (_React$Component) {
 
 	_createClass(MapControls, [{
 		key: "onChangeMaxDistance",
-		value: function onChangeMaxDistance(event) {
-			this.setState({ maxDistance: Number(event.target.value) });
-			this.props.onChangeMaxDistance(this.state.maxDistance);
+		value: function onChangeMaxDistance(_ref) {
+			var target = _ref.target;
+
+			var value = Number(target.value);
+			this.props.onChangeMaxDistance(value);
+			this.setState({ maxDistance: value });
 		}
 	}, {
 		key: "onChangeMaxPrice",
-		value: function onChangeMaxPrice(event) {
-			this.setState({ maxPrice: Number(event.target.value) });
-			this.props.onChangeMaxPrice(this.state.maxPrice);
+		value: function onChangeMaxPrice(_ref2) {
+			var target = _ref2.target;
+
+			var value = Number(target.value);
+			this.props.onChangeMaxPrice(value);
+			this.setState({ maxPrice: value });
+		}
+	}, {
+		key: "onChangeWorkAddress",
+		value: function onChangeWorkAddress(_ref3) {
+			var target = _ref3.target;
+
+			this.setState({ workAddress: target.value });
+		}
+	}, {
+		key: "onSubmitWorkAddress",
+		value: function onSubmitWorkAddress() {
+			this.props.onChangeWorkAddress(this.state.workAddress);
 		}
 	}, {
 		key: "render",
@@ -19831,7 +19956,7 @@ var MapControls = (function (_React$Component) {
 				_react2.default.createElement(
 					"label",
 					null,
-					"Max distance ",
+					"Max distance to train/work ",
 					_react2.default.createElement("input", { type: "range", min: "1", max: "10", step: "1", onChange: this.onChangeMaxDistance.bind(this), value: this.state.maxDistance }),
 					" ",
 					this.state.maxDistance,
@@ -19842,6 +19967,23 @@ var MapControls = (function (_React$Component) {
 					null,
 					"Max price $",
 					_react2.default.createElement("input", { type: "number", min: "100", max: "20000", step: "10", onChange: this.onChangeMaxPrice.bind(this), value: this.state.maxPrice })
+				),
+				_react2.default.createElement(
+					"label",
+					null,
+					"Work address $",
+					_react2.default.createElement("input", { type: "text", value: this.state.workAddress, defaultValue: "601 Vallejo St., San Francisco", onChange: this.onChangeWorkAddress.bind(this) }),
+					_react2.default.createElement(
+						"button",
+						{ onClick: this.onSubmitWorkAddress.bind(this) },
+						"Update"
+					)
+				),
+				_react2.default.createElement(
+					"label",
+					{ className: "pull-right" },
+					this.props.results.length,
+					" results"
 				)
 			);
 		}
@@ -19887,7 +20029,11 @@ function get() {
     }).then(function (_) {
       var parser = new DOMParser();
       var barts = Array.from(parser.parseFromString(_, 'application/xml').querySelectorAll('station')).map(function (_) {
-        return [_.querySelector('name').innerText, [_.querySelector('gtfs_latitude').innerHTML, _.querySelector('gtfs_longitude').innerHTML]];
+        return {
+          title: _.querySelector('name').innerText,
+          lat: Number(_.querySelector('gtfs_latitude').innerHTML),
+          lng: Number(_.querySelector('gtfs_longitude').innerHTML)
+        };
       });
       resolve(barts);
     });
@@ -19901,7 +20047,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.get = get;
-var CALTRAIN_STATIONS = [['San Francisco', [37.7766646, -122.3947062]], ['22nd St.', [37.7575278, -122.3926874]], ['Bayshore', [37.709715, -122.4013705]], ['South San Francisco', [37.6575655, -122.4055514]], ['San Bruno', [37.632378, -122.412389]], ['Millbrae', [37.6003768, -122.3874996]], ['Burlingame', [37.5795136, -122.3449288]], ['San Mateo', [37.5679943, -122.3239938]], ['Hayward Park', [37.5525458, -122.3089987]], ['Hillsdale', [37.5370455, -122.2973664]], ['Belmont', [37.555225, -122.3172766]], ['San Carlos', [37.5075635, -122.2600094]], ['Redwood City', [37.4854205, -122.2319197]], ['Menlo Park', [37.4545172, -122.1823623]], ['Palo Alto', [37.4434248, -122.1651742]], ['California Ave.', [37.4291586, -122.1419024]], ['San Antonio', [37.407202, -122.1071600]], ['Mountain View', [37.3937715, -122.0766438]], ['Sunnyvale', [37.3780368, -122.0303662]], ['Lawrence', [37.371556, -121.996962]], ['Santa Clara', [37.3532523, -121.9365159]], ['San Jose Diridon', [37.3299098, -121.9024648]], ['Tamien', [37.3112334, -121.8825612]]];
+var CALTRAIN_STATIONS = [{ title: 'San Francisco', lat: 37.7766646, lng: -122.3947062 }, { title: '22nd St.', lat: 37.7575278, lng: -122.3926874 }, { title: 'Bayshore', lat: 37.709715, lng: -122.4013705 }, { title: 'South San Francisco', lat: 37.6575655, lng: -122.4055514 }, { title: 'San Bruno', lat: 37.632378, lng: -122.412389 }, { title: 'Millbrae', lat: 37.6003768, lng: -122.3874996 }, { title: 'Burlingame', lat: 37.5795136, lng: -122.3449288 }, { title: 'San Mateo', lat: 37.5679943, lng: -122.3239938 }, { title: 'Hayward Park', lat: 37.5525458, lng: -122.3089987 }, { title: 'Hillsdale', lat: 37.5370455, lng: -122.2973664 }, { title: 'Belmont', lat: 37.555225, lng: -122.3172766 }, { title: 'San Carlos', lat: 37.5075635, lng: -122.2600094 }, { title: 'Redwood City', lat: 37.4854205, lng: -122.2319197 }, { title: 'Menlo Park', lat: 37.4545172, lng: -122.1823623 }, { title: 'Palo Alto', lat: 37.4434248, lng: -122.1651742 }, { title: 'California Ave.', lat: 37.4291586, lng: -122.1419024 }, { title: 'San Antonio', lat: 37.407202, lng: -122.1071600 }, { title: 'Mountain View', lat: 37.3937715, lng: -122.0766438 }, { title: 'Sunnyvale', lat: 37.3780368, lng: -122.0303662 }, { title: 'Lawrence', lat: 37.371556, lng: -121.996962 }, { title: 'Santa Clara', lat: 37.3532523, lng: -121.9365159 }, { title: 'San Jose Diridon', lat: 37.3299098, lng: -121.9024648 }, { title: 'Tamien', lat: 37.3112334, lng: -121.8825612 }];
 
 function get() {
   return Promise.resolve(CALTRAIN_STATIONS);

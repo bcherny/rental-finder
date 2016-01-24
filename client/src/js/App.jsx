@@ -8,7 +8,9 @@ export default class App extends React.Component {
     super()
     this.state = {
       maxDistance: 1,
-      maxPrice: 1200
+      maxPrice: 1200,
+      results: [],
+      workAddress: '601 Vallejo St., San Francisco'
     }
   }
 
@@ -22,6 +24,16 @@ export default class App extends React.Component {
     this.setState(Object.assign({}, this.state, { maxPrice }))
   }
 
+  // (workAddress: String) => void
+  onChangeWorkAddress (workAddress) {
+    this.setState(Object.assign({}, this.state, { workAddress }))
+  }
+
+  // (results: Array[Object]) => void
+  onResultsChanged (results) {
+    this.setState(Object.assign({}, this.results, { results }))
+  }
+
   render() {
     return <div>
       <MapBox
@@ -29,8 +41,15 @@ export default class App extends React.Component {
         maxDistance={this.state.maxDistance}
         maxPrice={this.state.maxPrice}
         mapId={ 'bcherny.e97e6efa' }
+        onResultsChanged={this.onResultsChanged.bind(this)}
+        workAddress={this.state.workAddress}
       />
-      <MapControls onChangeMaxDistance={this.onChangeMaxDistance.bind(this)} onChangeMaxPrice={this.onChangeMaxPrice.bind(this)} />
+      <MapControls
+        onChangeMaxDistance={this.onChangeMaxDistance.bind(this)}
+        onChangeMaxPrice={this.onChangeMaxPrice.bind(this)}
+        onChangeWorkAddress={this.onChangeWorkAddress.bind(this)}
+        results={this.state.results}
+      />
     </div>
   }
 

@@ -8,20 +8,17 @@ body {
   font: 300 14px/22px Calibri, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+.pull-right {
+  float: right;
+}
+
 html,
 body,
 #App,
+#App > div,
 .MapBox {
   height: 100%;
   width: 100%;
-}
-
-.MapBox {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  top: 0;
 }
 
 .MapControls {
@@ -36,6 +33,22 @@ body,
   border-right: 1px solid rgba(0,0,0,.1);
   display: inline-block;
   padding: 10px;
+}
+
+.MapControls label span {
+  vertical-align: sub;
+}
+
+.MapControls label button,
+.MapControls label input {
+  display: inline-block;
+  margin: -5px 0;
+  padding: 5px;
+  vertical-align: sub;
+}
+
+.MapControls label input[type="range"] {
+  vertical-align: -webkit-baseline-middle;
 }
 
 /* probably against the terms */
