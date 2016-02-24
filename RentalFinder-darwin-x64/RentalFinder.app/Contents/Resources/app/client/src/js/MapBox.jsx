@@ -2,13 +2,11 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import flatten from 'lodash/flatten'
 import { haversineDistance } from 'gc-distance'
-import { get as getBartStations } from './stations/bart'
-import { get as getCaltrainStations } from './stations/caltrain'
+import { get as getNYSubways } from './stations/ny-subways'
 
-const MAP_CENTER = [37.7809332, -122.4156281]
+const MAP_CENTER = [40.7390846, -74.0282945]
 const MAP_ZOOM = 12
 const MAX_PRICE = 1300
-// const WORK = [37.7809332, -122.4156281]
 
 const COLORS = {
   APT_NEAR_WORK: '#088E46',
@@ -79,13 +77,10 @@ export default class MapBox extends React.Component {
   }
 
   getTrainStations() {
-    Promise
-      .all([getBartStations(), getCaltrainStations()])
-      .then(flatten)
-      .then(trainStations => {
-        console.info('got train stations!', trainStations)
-        this.setState(Object.assign({}, this.state, { trainStations }))
-      })
+    getNYSubways().then(trainStations => {
+      console.info('got train stations!', trainStations)
+      this.setState(Object.assign({}, this.state, { trainStations }))
+    })
   }
 
   componentDidMount() {

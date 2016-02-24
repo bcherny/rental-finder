@@ -23,7 +23,7 @@ export default class App extends React.Component {
       maxDistance: 1,
       maxPrice: 1200,
       results: [],
-      workAddress: '601 Vallejo St., San Francisco'
+      workAddress: '220 River St. Hoboken NJ'
     }
   }
 

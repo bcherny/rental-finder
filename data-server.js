@@ -6,8 +6,8 @@ const fetch = dataFetcher.fetch
 const getProgress = dataFetcher.getProgress
 
 const HTTP_PORT = 4002
-const AREA = 'sfbay'
-const SUBAREAS = ['eby', 'pen', 'sby', 'sfc']
+const AREA = 'newyork'
+const SUBAREAS = ['jsy', 'mnh']
 
 console.info('fetching data...')
 

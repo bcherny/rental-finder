@@ -19549,7 +19549,7 @@ var App = (function (_React$Component2) {
       maxDistance: 1,
       maxPrice: 1200,
       results: [],
-      workAddress: '601 Vallejo St., San Francisco'
+      workAddress: '220 River St. Hoboken NJ'
     };
     return _this2;
   }
@@ -19690,9 +19690,7 @@ var _flatten2 = _interopRequireDefault(_flatten);
 
 var _gcDistance = require('gc-distance');
 
-var _bart = require('./stations/bart');
-
-var _caltrain = require('./stations/caltrain');
+var _nySubways = require('./stations/ny-subways');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -19702,10 +19700,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var MAP_CENTER = [37.7809332, -122.4156281];
+var MAP_CENTER = [40.7390846, -74.0282945];
 var MAP_ZOOM = 12;
 var MAX_PRICE = 1300;
-// const WORK = [37.7809332, -122.4156281]
 
 var COLORS = {
   APT_NEAR_WORK: '#088E46',
@@ -19789,7 +19786,7 @@ var MapBox = (function (_React$Component) {
     value: function getTrainStations() {
       var _this3 = this;
 
-      Promise.all([(0, _bart.get)(), (0, _caltrain.get)()]).then(_flatten2.default).then(function (trainStations) {
+      (0, _nySubways.get)().then(function (trainStations) {
         console.info('got train stations!', trainStations);
         _this3.setState(Object.assign({}, _this3.state, { trainStations: trainStations }));
       });
@@ -19962,7 +19959,7 @@ MapBox.propTypes = {
   workAddress: _react2.default.PropTypes.string
 };
 
-},{"./stations/bart":177,"./stations/caltrain":178,"gc-distance":28,"lodash/flatten":29,"react":172,"react-dom":43}],175:[function(require,module,exports){
+},{"./stations/ny-subways":177,"gc-distance":28,"lodash/flatten":29,"react":172,"react-dom":43}],175:[function(require,module,exports){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -20053,7 +20050,7 @@ var MapControls = (function (_React$Component) {
 					"label",
 					null,
 					"Work address $",
-					_react2.default.createElement("input", { type: "text", value: this.state.workAddress, defaultValue: "601 Vallejo St., San Francisco", onChange: this.onChangeWorkAddress.bind(this), style: { width: '150px' } }),
+					_react2.default.createElement("input", { type: "text", value: this.state.workAddress, defaultValue: "220 River St. Hoboken NJ", onChange: this.onChangeWorkAddress.bind(this), style: { width: '150px' } }),
 					_react2.default.createElement(
 						"button",
 						{ onClick: this.onSubmitWorkAddress.bind(this) },
@@ -20101,37 +20098,23 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.get = get;
-var URL = 'http://api.bart.gov/api/stn.aspx?cmd=stns&key=MW9S-E7SL-26DU-VV8V';
+var URL = 'https://data.cityofnewyork.us/api/geospatial/arq3-7z49?method=export&format=GeoJSON';
 
 function get() {
   return new Promise(function (resolve, reject) {
     fetch(URL).then(function (_) {
-      return _.text();
-    }).then(function (_) {
-      var parser = new DOMParser();
-      var barts = Array.from(parser.parseFromString(_, 'application/xml').querySelectorAll('station')).map(function (_) {
+      return _.json();
+    }).then(function (_ref) {
+      var features = _ref.features;
+      return resolve(features.map(function (_) {
         return {
-          title: _.querySelector('name').innerText,
-          lat: Number(_.querySelector('gtfs_latitude').innerHTML),
-          lng: Number(_.querySelector('gtfs_longitude').innerHTML)
+          title: _.properties.name,
+          lat: _.geometry.coordinates[1],
+          lng: _.geometry.coordinates[0]
         };
-      });
-      resolve(barts);
+      }));
     });
   });
-}
-
-},{}],178:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.get = get;
-var CALTRAIN_STATIONS = [{ title: 'San Francisco', lat: 37.7766646, lng: -122.3947062 }, { title: '22nd St.', lat: 37.7575278, lng: -122.3926874 }, { title: 'Bayshore', lat: 37.709715, lng: -122.4013705 }, { title: 'South San Francisco', lat: 37.6575655, lng: -122.4055514 }, { title: 'San Bruno', lat: 37.632378, lng: -122.412389 }, { title: 'Millbrae', lat: 37.6003768, lng: -122.3874996 }, { title: 'Burlingame', lat: 37.5795136, lng: -122.3449288 }, { title: 'San Mateo', lat: 37.5679943, lng: -122.3239938 }, { title: 'Hayward Park', lat: 37.5525458, lng: -122.3089987 }, { title: 'Hillsdale', lat: 37.5370455, lng: -122.2973664 }, { title: 'Belmont', lat: 37.555225, lng: -122.3172766 }, { title: 'San Carlos', lat: 37.5075635, lng: -122.2600094 }, { title: 'Redwood City', lat: 37.4854205, lng: -122.2319197 }, { title: 'Menlo Park', lat: 37.4545172, lng: -122.1823623 }, { title: 'Palo Alto', lat: 37.4434248, lng: -122.1651742 }, { title: 'California Ave.', lat: 37.4291586, lng: -122.1419024 }, { title: 'San Antonio', lat: 37.407202, lng: -122.1071600 }, { title: 'Mountain View', lat: 37.3937715, lng: -122.0766438 }, { title: 'Sunnyvale', lat: 37.3780368, lng: -122.0303662 }, { title: 'Lawrence', lat: 37.371556, lng: -121.996962 }, { title: 'Santa Clara', lat: 37.3532523, lng: -121.9365159 }, { title: 'San Jose Diridon', lat: 37.3299098, lng: -121.9024648 }, { title: 'Tamien', lat: 37.3112334, lng: -121.8825612 }];
-
-function get() {
-  return Promise.resolve(CALTRAIN_STATIONS);
 }
 
 },{}]},{},[176]);

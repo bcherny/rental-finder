@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "export VCR_MODE=cache; nodemon --exec babel-node -- index-dev.js",
-    "start-nocache": "nodemon --exec babel-node -- index-dev.js",
-    "build-binary": "electron-packager . RentalFinder --platform=darwin --arch=x64",
+    "start": "export VCR_MODE=cache; nodemon --ignore client/ --exec babel-node -- index-dev.js",
+    "start-nocache": "nodemon --ignore client/ --exec babel-node -- index-dev.js",
+    "build-binary": "electron-packager . RentalFinder --platform=darwin --arch=x64 --icon=icon.icns",
     "build-local": "electron ."
   },
   "author": "Boris Cherny <boris@performancejs.com> (http://performancejs.com/)",

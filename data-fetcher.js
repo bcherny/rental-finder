@@ -9,7 +9,7 @@ const partition = lodash.partition
 const random = lodash.random
 
 const getURLs = (area, subareas) => flatten(subareas.map(_ => [
-	`http://${area}.craigslist.org/jsonsearch/apa/${_}`,
+	`http://${area}.craigslist.org/jsonsearch/aap/${_}`,
 	`http://${area}.craigslist.org/jsonsearch/${_}/roo`
 ]))
 const getGeoClusterURL = (area, clusterUrl) => `http://${area}.craigslist.org${ clusterUrl }`
